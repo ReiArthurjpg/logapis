@@ -1,0 +1,14 @@
+{
+  "name": "logmov/auth-api",
+  "description": "API RESTful de Autenticação para o Sistema LOGMOV",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "firebase/php-jwt": "^6.10"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  }
+}

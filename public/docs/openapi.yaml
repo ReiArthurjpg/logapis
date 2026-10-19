@@ -1,0 +1,278 @@
+openapi: 3.0.3
+info:
+  title: LOGMOV - API de Autenticação e Gestão de Usuários
+  description: |
+    API RESTful de autenticação baseada em JWT (JSON Web Token) desenvolvida em PHP 8.2+ para a plataforma LOGMOV (logística e entregas).
+    Permite autenticação com email e senha, validação de sessão em `/api/me`, além de recuperação de senha com tokens temporários expirando estritamente em **30 minutos**.
+  version: 1.0.0
+  contact:
+    name: Suporte LOGMOV
+    email: admin@logmov.com
+
+servers:
+  - url: http://localhost:8001
+    description: Servidor de Desenvolvimento Local (Docker)
+
+paths:
+  /api/login:
+    post:
+      summary: Autenticar usuário
+      description: Valida e-mail e senha do usuário. Em caso de sucesso, emite um JWT Bearer Token contendo o perfil e identificadores.
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@logmov.com
+                password:
+                  type: string
+                  format: password
+                  example: admin123
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+        '400':
+          description: Parâmetros inválidos ou campos ausentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Credenciais incorretas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Conta inativa ou desativada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/me:
+    get:
+      summary: Obter dados do usuário autenticado
+      description: Retorna as informações do usuário atual mediante fornecimento do token JWT Bearer.
+      tags:
+        - Autenticação
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dados retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeSuccessResponse'
+        '401':
+          description: Token não fornecido, inválido ou expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuário não localizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/forgot-password:
+    post:
+      summary: Solicitar redefinição de senha
+      description: Gera um token de redefinição com validade de 30 minutos vinculado ao e-mail informado.
+      tags:
+        - Recuperação de Senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: admin@logmov.com
+      responses:
+        '200':
+          description: Instruções e token gerados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Instruções para redefinição de senha geradas com sucesso.
+                  data:
+                    type: object
+                    properties:
+                      reset_token:
+                        type: string
+                        example: 4a2b9c7e1f8d3a5e...
+                      expires_in:
+                        type: string
+                        example: 30 minutos
+                      expires_at:
+                        type: string
+                        format: date-time
+                        example: '2026-10-18 21:16:25'
+        '400':
+          description: E-mail em formato inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/reset-password:
+    post:
+      summary: Redefinir senha utilizando o Reset Token
+      description: Valida o token temporário de 30 minutos e atualiza a senha com criptografia Bcrypt.
+      tags:
+        - Recuperação de Senha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - password
+              properties:
+                token:
+                  type: string
+                  description: Token de 64 caracteres recebido no fluxo de recuperação
+                  example: 4a2b9c7e1f8d3a5e2f9d8c7b6a5e4d3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  description: Nova senha (mínimo 6 caracteres)
+                  example: novaSenhaForte2026!
+      responses:
+        '200':
+          description: Senha redefinida com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Senha redefinida com sucesso! Você já pode realizar o login com suas novas credenciais.
+        '400':
+          description: Token inválido, expirado ou senha curta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'Insira o token JWT no formato: Bearer <seu-token>'
+
+  schemas:
+    LoginSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Login realizado com sucesso
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            user:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 1
+                name:
+                  type: string
+                  example: Administrador Master
+                email:
+                  type: string
+                  example: admin@logmov.com
+                role:
+                  type: string
+                  enum: [admin, empresa, motoboy]
+                  example: admin
+
+    MeSuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        message:
+          type: string
+          example: Dados do usuário autenticado
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            name:
+              type: string
+              example: Administrador Master
+            email:
+              type: string
+              example: admin@logmov.com
+            role:
+              type: string
+              example: admin
+            status:
+              type: string
+              example: ativo
+            created_at:
+              type: string
+              example: '2026-10-18 20:00:00'
+            updated_at:
+              type: string
+              example: '2026-10-18 20:00:00'
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+          example: E-mail ou senha incorretos.
