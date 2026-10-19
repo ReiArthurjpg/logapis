@@ -311,6 +311,215 @@ paths:
         '200':
           description: Status alterado com sucesso
 
+  /api/motoboys/stats:
+    get:
+      summary: Obter estatísticas e contadores de motoboys parceiros
+      description: Retorna contadores agregados para cards de dashboard (total, ativos, pendentes, recusados).
+      tags:
+        - Motoboys
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Estatísticas obtidas com sucesso
+
+  /api/motoboys:
+    get:
+      summary: Listar motoboys parceiros
+      description: Retorna lista de motoboys com suporte a filtros por termo de busca e status.
+      tags:
+        - Motoboys
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Busca por nome, email, MEI ou placa
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [Ativo, Pendente, Recusado]
+          description: Filtro por status
+      responses:
+        '200':
+          description: Lista de motoboys recuperada com sucesso
+    post:
+      summary: Cadastrar novo motoboy parceiro
+      description: Registra um novo motoboy parceiro no sistema com status inicial 'Pendente'.
+      tags:
+        - Motoboys
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+                - email
+                - senha
+                - mei
+                - whatsapp
+              properties:
+                nome:
+                  type: string
+                  example: Marcos Oliveira
+                email:
+                  type: string
+                  format: email
+                  example: marcos.moto@logmov.com
+                senha:
+                  type: string
+                  format: password
+                  example: moto1234
+                mei:
+                  type: string
+                  example: 45.123.789/0001-22
+                whatsapp:
+                  type: string
+                  example: (11) 97777-8888
+                cnh:
+                  type: string
+                  example: '98765432100'
+                placa:
+                  type: string
+                  example: ABC-1234
+                cidadeUf:
+                  type: string
+                  example: São Paulo / SP
+                status:
+                  type: string
+                  enum: [Ativo, Pendente, Recusado]
+                  example: Pendente
+      responses:
+        '201':
+          description: Motoboy parceiro cadastrado com sucesso
+        '409':
+          description: E-mail ou MEI já cadastrado
+        '422':
+          description: Dados inválidos ou campos obrigatórios ausentes
+
+  /api/motoboys/{id}:
+    get:
+      summary: Obter detalhes do motoboy
+      tags:
+        - Motoboys
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalhes do motoboy
+        '404':
+          description: Motoboy não encontrado
+    put:
+      summary: Atualizar cadastro do motoboy
+      tags:
+        - Motoboys
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+                - email
+                - mei
+                - whatsapp
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+                senha:
+                  type: string
+                  description: Opcional - enviar apenas se desejar alterar
+                mei:
+                  type: string
+                whatsapp:
+                  type: string
+                cnh:
+                  type: string
+                placa:
+                  type: string
+                cidadeUf:
+                  type: string
+      responses:
+        '200':
+          description: Dados atualizados com sucesso
+        '404':
+          description: Motoboy não encontrado
+    delete:
+      summary: Remover motoboy parceiro
+      tags:
+        - Motoboys
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Motoboy removido com sucesso
+
+  /api/motoboys/{id}/status:
+    patch:
+      summary: Alterar status do motoboy (Aprovar / Recusar)
+      description: Atualiza o status para Ativo, Pendente ou Recusado. Se for Recusado, o campo motivo_recusa é obrigatório.
+      tags:
+        - Motoboys
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [Ativo, Pendente, Recusado]
+                  example: Ativo
+                motivo_recusa:
+                  type: string
+                  example: CNH vencida
+      responses:
+        '200':
+          description: Status atualizado com sucesso
+        '422':
+          description: Motivo de recusa obrigatório ao recusar
+
   /api/forgot-password:
     post:
       summary: Solicitar redefinição de senha

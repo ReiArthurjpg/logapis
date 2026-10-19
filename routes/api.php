@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Routing\Router;
 use App\Controllers\AuthController;
 use App\Controllers\EmpresaController;
+use App\Controllers\MotoboyController;
 use App\Middlewares\AuthMiddleware;
 use App\Utils\Response;
 
@@ -65,6 +66,37 @@ $router->patch('/api/empresas/{id}/status', [EmpresaController::class, 'updateSt
 ]);
 
 $router->delete('/api/empresas/{id}', [EmpresaController::class, 'destroy'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+// ===================================================================
+// Rotas de Motoboys Parceiros (Protegidas por JWT)
+// ===================================================================
+$router->get('/api/motoboys/stats', [MotoboyController::class, 'stats'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->get('/api/motoboys', [MotoboyController::class, 'index'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->get('/api/motoboys/{id}', [MotoboyController::class, 'show'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->post('/api/motoboys', [MotoboyController::class, 'store'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->put('/api/motoboys/{id}', [MotoboyController::class, 'update'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->patch('/api/motoboys/{id}/status', [MotoboyController::class, 'updateStatus'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->delete('/api/motoboys/{id}', [MotoboyController::class, 'destroy'], [
     fn() => AuthMiddleware::handle()
 ]);
 

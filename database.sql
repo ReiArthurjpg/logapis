@@ -52,3 +52,27 @@ CREATE TABLE IF NOT EXISTS `empresas` (
   INDEX `idx_empresas_status` (`status`),
   INDEX `idx_empresas_busca` (`empresa`, `responsavel`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ===================================================================
+-- Tabela de Motoboys Parceiros
+-- ===================================================================
+CREATE TABLE IF NOT EXISTS `motoboys` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `nome` VARCHAR(150) NOT NULL,
+  `email` VARCHAR(150) NOT NULL UNIQUE,
+  `senha` VARCHAR(255) NOT NULL,
+  `mei` VARCHAR(25) NOT NULL UNIQUE,
+  `whatsapp` VARCHAR(20) NOT NULL,
+  `cnh` VARCHAR(20) DEFAULT NULL,
+  `placa` VARCHAR(10) DEFAULT NULL,
+  `cidade_uf` VARCHAR(100) DEFAULT NULL,
+  `status` ENUM('Ativo', 'Pendente', 'Recusado') NOT NULL DEFAULT 'Pendente',
+  `motivo_recusa` TEXT DEFAULT NULL,
+  `criado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_motoboys_email` (`email`),
+  INDEX `idx_motoboys_mei` (`mei`),
+  INDEX `idx_motoboys_status` (`status`),
+  INDEX `idx_motoboys_busca` (`nome`, `placa`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
