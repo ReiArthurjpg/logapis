@@ -53,8 +53,25 @@ class AuthController
         $stmt->execute([':email' => $email]);
         $user = $stmt->fetch();
 
-        // Verificação segura de credenciais
-        if (!$user || !password_verify($password, $user['senha'])) {
+        // Verificação segura de credenciais: suporta Bcrypt nativo ou texto puro manual
+        $senhaBanco = (string) ($user['senha'] ?? '');
+        $isBcrypt = str_starts_with($senhaBanco, '$2y$') || str_starts_with($senhaBanco, '$2a$') || str_starts_with($senhaBanco, '$2b$');
+
+        $senhaValida = false;
+        if ($isBcrypt) {
+            $senhaValida = password_verify($password, $senhaBanco);
+        } else {
+            // Caso tenha sido inserida como texto puro no phpMyAdmin ou importação
+            if ($password === $senhaBanco) {
+                $senhaValida = true;
+                // Migração transparente: atualiza imediatamente para hash Bcrypt seguro no banco!
+                $novoHash = password_hash($password, PASSWORD_BCRYPT);
+                $stmtUpdate = $this->db->prepare('UPDATE usuarios SET senha = :senha WHERE id = :id');
+                $stmtUpdate->execute([':senha' => $novoHash, ':id' => $user['id']]);
+            }
+        }
+
+        if (!$user || !$senhaValida) {
             Response::error('E-mail ou senha incorretos.', 401);
         }
 
