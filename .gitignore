@@ -1,0 +1,18 @@
+# Ambientes e Segredos
+.env
+.env.local
+.env.*.local
+.env.prod
+
+# Dependências
+vendor/
+
+# Logs e arquivos de cache
+*.log
+.phpunit.result.cache
+
+# IDEs e Sistema Operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
