@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Routing\Router;
 use App\Controllers\AuthController;
+use App\Controllers\EmpresaController;
 use App\Middlewares\AuthMiddleware;
 use App\Utils\Response;
 
@@ -33,6 +34,37 @@ $router->get('/api/me', [AuthController::class, 'me'], [
 
 // Endpoint protegido para Logout / Invalidação de Token
 $router->post('/api/logout', [AuthController::class, 'logout'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+// ===================================================================
+// Rotas de Empresas Parceiras (Protegidas por JWT)
+// ===================================================================
+$router->get('/api/empresas/stats', [EmpresaController::class, 'stats'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->get('/api/empresas', [EmpresaController::class, 'index'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->get('/api/empresas/{id}', [EmpresaController::class, 'show'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->post('/api/empresas', [EmpresaController::class, 'store'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->put('/api/empresas/{id}', [EmpresaController::class, 'update'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->patch('/api/empresas/{id}/status', [EmpresaController::class, 'updateStatus'], [
+    fn() => AuthMiddleware::handle()
+]);
+
+$router->delete('/api/empresas/{id}', [EmpresaController::class, 'destroy'], [
     fn() => AuthMiddleware::handle()
 ]);
 
