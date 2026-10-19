@@ -22,3 +22,14 @@ CREATE TABLE `usuarios` (
   INDEX `idx_usuarios_email` (`email`),
   INDEX `idx_usuarios_reset_token` (`reset_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ===================================================================
+-- Tabela de Blacklist de Tokens JWT Invalidados (Logout)
+-- ===================================================================
+CREATE TABLE IF NOT EXISTS `token_blacklist` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `token_hash` VARCHAR(64) NOT NULL UNIQUE,
+  `expires_at` DATETIME NOT NULL,
+  `criado_em` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_token_hash` (`token_hash`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

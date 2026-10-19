@@ -92,6 +92,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/logout:
+    post:
+      summary: Encerrar sessão (Logout)
+      description: Invalida o token JWT atual enviando-o para a lista de tokens revogados (Blacklist), impedindo seu reuso.
+      tags:
+        - Autenticação
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Sessão encerrada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Logout realizado com sucesso. Sessão encerrada.
+        '401':
+          description: Token não fornecido, inválido ou já revogado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/forgot-password:
     post:
       summary: Solicitar redefinição de senha

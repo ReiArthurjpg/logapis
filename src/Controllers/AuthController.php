@@ -118,6 +118,32 @@ class AuthController
     }
 
     /**
+     * Endpoint: POST /api/logout
+     * Invalida o token JWT atual adicionando seu hash à blacklist até a sua data de expiração
+     */
+    public function logout(array $authUser): void
+    {
+        $rawToken = $authUser['raw_token'] ?? null;
+        $exp = $authUser['exp'] ?? (time() + 28800);
+
+        if ($rawToken) {
+            $tokenHash = hash('sha256', $rawToken);
+            $expiresAt = date('Y-m-d H:i:s', (int) $exp);
+
+            $stmt = $this->db->prepare(
+                'INSERT INTO token_blacklist (token_hash, expires_at) VALUES (:token_hash, :expires_at) ON DUPLICATE KEY UPDATE expires_at = :expires_at_dup'
+            );
+            $stmt->execute([
+                ':token_hash'      => $tokenHash,
+                ':expires_at'      => $expiresAt,
+                ':expires_at_dup'  => $expiresAt,
+            ]);
+        }
+
+        Response::success('Logout realizado com sucesso. Sessão encerrada.', null, 200);
+    }
+
+    /**
      * Endpoint: POST /api/forgot-password
      * Gera um token de redefinição de senha com validade estrita de 30 minutos
      */

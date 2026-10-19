@@ -31,6 +31,16 @@ class AuthMiddleware
         $secret = Database::getEnv('JWT_SECRET', 'super_secret_logmov_key_2026_change_in_production!#@');
 
         try {
+            // Verifica se o token está revogado na Blacklist (Logout)
+            $db = Database::getConnection();
+            $tokenHash = hash('sha256', $token);
+            $checkStmt = $db->prepare('SELECT id FROM token_blacklist WHERE token_hash = :hash AND expires_at > NOW() LIMIT 1');
+            $checkStmt->execute([':hash' => $tokenHash]);
+
+            if ($checkStmt->fetch()) {
+                Response::error('Este token foi invalidado (sessão encerrada). Faça login novamente.', 401);
+            }
+
             $payload = JwtService::decode($token, $secret);
 
             // Validação de papéis de permissão
@@ -41,6 +51,7 @@ class AuthMiddleware
                 }
             }
 
+            $payload['raw_token'] = $token;
             return $payload;
         } catch (Exception $e) {
             Response::error('Sessão expirada ou token inválido: ' . $e->getMessage(), 401);

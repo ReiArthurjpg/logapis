@@ -31,6 +31,11 @@ $router->get('/api/me', [AuthController::class, 'me'], [
     fn() => AuthMiddleware::handle()
 ]);
 
+// Endpoint protegido para Logout / Invalidação de Token
+$router->post('/api/logout', [AuthController::class, 'logout'], [
+    fn() => AuthMiddleware::handle()
+]);
+
 // Recuperação de Senha (Reset Token com validade de 30 minutos)
 $router->post('/api/forgot-password', [AuthController::class, 'forgotPassword']);
 $router->post('/api/reset-password', [AuthController::class, 'resetPassword']);
